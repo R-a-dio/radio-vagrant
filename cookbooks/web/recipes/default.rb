@@ -43,10 +43,19 @@ apt_repository 'percona' do
     action       :add
 end
 
+## ElasticSearch
+apt_repository 'elasticsearch' do
+    uri          'http://packages.elasticsearch.org/elasticsearch/1.0/debian'
+    distribution 'stable'
+    components   ['main']
+    key          'http://packages.elasticsearch.org/GPG-KEY-elasticsearch'
+    action       :add
+end
+
 ##########
 ## Packages
 ##########
-%w{nginx git redis-server percona-server-server-5.6}.each do |pkg|
+%w{nginx git elasticsearch openjdk-7-jre-headless redis-server percona-server-server-5.6}.each do |pkg|
     package pkg do
         action :upgrade
     end
@@ -70,6 +79,22 @@ file node[:web][:composer_bin] do
     owner 'root'
     group 'root'
     mode  00755
+end
+
+##########
+## ElasticSearch
+##########
+service "elasticsearch" do
+    supports :status => true, :restart => true, :reload => true
+    action   [:enable, :start]
+end
+
+template '/etc/elasticsearch/elasticsearch.yml' do
+    source 'elasticsearch.yml.erb'
+    owner  'root'
+    group  'root'
+    mode   '0644'
+    action :create
 end
 
 ##########
@@ -134,14 +159,12 @@ end
     end
 end
 
-%w{install update}.each do |cmd|
-    execute "#{node[:web][:composer_bin]} #{cmd}" do
-        cwd    node[:web][:repo_path]
-        user   'vagrant'
-        group  'vagrant'
-        environment ({'COMPOSER_HOME' => '/home/vagrant'})
-        action :run
-    end
+execute "#{node[:web][:composer_bin]} install" do
+    cwd    node[:web][:repo_path]
+    user   'vagrant'
+    group  'vagrant'
+    environment ({'COMPOSER_HOME' => '/home/vagrant'})
+    action :run
 end
 
 # execute "php artisan migrate" do
