@@ -67,6 +67,24 @@ end
     end
 end
 
+##########
+## php5-fpm config
+##########
+## Reload Nginx Service
+service 'php5-fpm' do
+    supports :restart => true, :reload => true
+    action   :nothing
+end
+
+template '/etc/php5/fpm/pool.d/www.conf' do
+    source 'www.conf.erb'
+    owner  'root'
+    group  'root'
+    mode   '0644'
+    notifies :restart, 'service[php5-fpm]', :immediately
+    action   :create
+end
+
 ## Composer
 execute "curl -sS https://getcomposer.org/installer | php; mv ./composer.phar #{node[:web][:composer_bin]}" do
     cwd     '/tmp'
@@ -143,20 +161,6 @@ end
 ##########
 execute 'mysql -u root -e "CREATE DATABASE IF NOT EXISTS radio"' do
     action :run
-end
-
-##########
-## Composer Stuff
-##########
-## Copy configs
-%w{app database}.each do |conf|
-    execute "cp #{conf}.php.sample #{conf}.php" do
-        cwd   node[:web][:repo_path] + '/app/config/'
-        user  'vagrant'
-        group 'vagrant'
-        not_if { ::File.exists?(node[:web][:repo_path] + "/app/config/#{conf}.php")}
-        action :run
-    end
 end
 
 execute "#{node[:web][:composer_bin]} install" do
