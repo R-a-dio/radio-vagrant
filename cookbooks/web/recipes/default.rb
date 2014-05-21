@@ -115,6 +115,13 @@ template '/etc/elasticsearch/elasticsearch.yml' do
     action :create
 end
 
+# create the song database index
+execute "curl -XPUT http://127.0.0.1:9200/song-database" do
+    user  "vagrant"
+    group "vagrant"
+    action :run
+end
+
 ##########
 ## Clone Repository
 ##########
