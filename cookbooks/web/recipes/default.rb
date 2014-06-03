@@ -170,6 +170,10 @@ execute 'mysql -u root -e "CREATE DATABASE IF NOT EXISTS radio"' do
     action :run
 end
 
+execute 'mysql -u root -e "GRANT ALL PRIVILEGES ON radio.* TO \'radio\'@\'localhost\'; FLUSH PRIVILEGES;"' do
+    action :run
+end
+
 execute "#{node[:web][:composer_bin]} install" do
     cwd    node[:web][:repo_path]
     user   'vagrant'
