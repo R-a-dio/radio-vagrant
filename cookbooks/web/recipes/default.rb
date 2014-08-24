@@ -6,6 +6,7 @@
 #
 
 include_recipe 'apt'
+include_recipe 'nodejs'
 
 ##########
 ## Attributes
@@ -45,7 +46,7 @@ end
 
 ## ElasticSearch
 apt_repository 'elasticsearch' do
-    uri          'http://packages.elasticsearch.org/elasticsearch/1.0/debian'
+    uri          'http://packages.elasticsearch.org/elasticsearch/1.3/debian'
     distribution 'stable'
     components   ['main']
     key          'http://packages.elasticsearch.org/GPG-KEY-elasticsearch'
@@ -66,6 +67,9 @@ end
         action :upgrade
     end
 end
+
+nodejs_npm 'recess'
+nodejs_npm 'bower'
 
 ##########
 ## php5-fpm config
@@ -182,9 +186,18 @@ execute "#{node[:web][:composer_bin]} install" do
     action :run
 end
 
-# execute "php artisan migrate" do
-#     cwd    node[:web][:repo_path]
-#     user   'vagrant'
-#     group  'vagrant'
-#     action :run
-# end
+execute "curl -sS https://static.r-a-d.io/files/radio.sql > /vagrant/radio.sql" do
+    cwd "/vagrant"
+    user "vagrant"
+    group "vagrant"
+    not_if { ::File.exists?("/vagrant/radio.sql")} # put a radio.sql file in the root of the project
+    action :run
+end
+
+execute "mysql -u root radio < radio.sql; touch .mysql_provisioned" do
+    cwd "/vagrant"
+    user "vagrant"
+    group "vagrant"
+    not_if { ::File.exists?("/vagrant/.mysql_provisioned") }
+    action :run
+end

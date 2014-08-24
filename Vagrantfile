@@ -14,14 +14,11 @@ Vagrant.configure("2") do |config|
   config.vm.provision :chef_solo do |chef|
       # chef.log_level = :debug
 
-      chef.add_recipe "nginx::repo"
-      chef.add_recipe "nginx"
+      chef.add_recipe "apt"
+      chef.add_recipe "nodejs"
       chef.add_recipe "web"
 
       chef.json = {
-        "nginx" => {
-          "default_site_enabled" => false
-        },
         "web" => {
             "repo"        => "https://github.com/R-a-dio/site",
             "repo_branch" => "develop",

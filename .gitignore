@@ -1,3 +1,5 @@
 /.vagrant/
 /radio_site
 /key
+/.mysql_provisioned
+/radio.sql
